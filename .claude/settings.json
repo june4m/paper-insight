@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm --version)",
+      "Bash(npm install *)",
+      "Bash(cp .env.example .env)",
+      "Bash(sed -i 's/VECTOR_BACKEND=chroma/VECTOR_BACKEND=memory/' .env)",
+      "Bash(node -e ' *)",
+      "Bash(node -e \"console.log\\('next version:', require\\('next/package.json'\\).version\\)\")",
+      "Bash(NEXT_TELEMETRY_DISABLED=1 npm run build)",
+      "Bash(git check-ignore *)",
+      "Bash(git add *)"
+    ]
+  }
+}

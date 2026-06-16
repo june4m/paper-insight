@@ -1,0 +1,53 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Environment
+.env
+.env.local
+**/.env
+!**/.env.example
+
+# Build output
+dist/
+build/
+.next/
+out/
+
+# Storage / uploaded files
+backend/storage/
+backend/uploads/
+*.pdf
+!AI Document Q&A Chatbot MVP Scope.pdf
+
+# Vector DB (Chroma local persistence)
+backend/chroma/
+chroma-data/
+
+# SQLite database (du lieu thuc te - khong day len git)
+backend/data/
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
+# Secrets / credentials
+*.key
+*.pem
+*.p12
+*credential*
+*secret*.json
+serviceAccount*.json
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
