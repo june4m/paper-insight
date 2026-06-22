@@ -47,7 +47,7 @@ export default function HomePage() {
   }, [documents, refresh]);
 
   async function handleDelete(id) {
-    if (!confirm('Delete this document and all its data?')) return;
+    if (!confirm('Delete this document and everything indexed from it?')) return;
     setDeletingId(id);
     try {
       await api.deleteDocument(id);
@@ -60,57 +60,88 @@ export default function HomePage() {
   }
 
   return (
-    <div className="space-y-8">
-      <section>
-        <h1 className="text-2xl font-bold text-slate-900">Upload a document</h1>
-        <p className="mt-1 text-sm text-slate-500">
-          Upload a PDF, wait for processing, then ask questions grounded in its content.
+    <div className="space-y-14">
+      {/* Hero — the thesis: answers you can check against the page. */}
+      <section className="animate-fade-up">
+        <p className="eyebrow">Retrieval-grounded reading</p>
+        <h1 className="mt-3 max-w-3xl font-display text-[2.6rem] font-medium leading-[1.08] tracking-tight text-ink sm:text-[3.25rem]">
+          Ask a paper anything.{' '}
+          <span className="marker-underline italic">Check every word</span> against
+          the page it came from.
+        </h1>
+        <p className="mt-4 max-w-xl font-display text-lg leading-relaxed text-ink-soft">
+          Drop in a PDF. Paper Insight reads it, answers your questions from its own
+          text, and footnotes each reply to the exact passage — nothing invented,
+          nothing unsourced.
         </p>
-        <div className="mt-4">
-          <UploadForm onUploaded={refresh} />
-        </div>
       </section>
 
-      <section>
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-slate-900">Your documents</h2>
+      {/* Intake */}
+      <section className="animate-fade-up [animation-delay:60ms]">
+        <div className="mb-4 flex items-baseline gap-3">
+          <span className="font-mono text-sm text-prussian-500">01</span>
+          <h2 className="font-display text-xl font-medium text-ink">Add a document</h2>
+        </div>
+        <UploadForm onUploaded={refresh} />
+      </section>
+
+      {/* Catalog */}
+      <section className="animate-fade-up [animation-delay:120ms]">
+        <div className="mb-4 flex items-baseline justify-between gap-3">
+          <div className="flex items-baseline gap-3">
+            <span className="font-mono text-sm text-prussian-500">02</span>
+            <h2 className="font-display text-xl font-medium text-ink">Your library</h2>
+            {documents.length > 0 && (
+              <span className="font-mono text-xs text-ink-faint">
+                {documents.length} {documents.length === 1 ? 'entry' : 'entries'}
+              </span>
+            )}
+          </div>
           <button
             onClick={refresh}
-            className="text-sm text-brand-600 hover:text-brand-700"
+            className="font-mono text-xs uppercase tracking-wide text-prussian-500 transition hover:text-prussian-700"
           >
-            ↻ Refresh
+            Refresh
           </button>
         </div>
 
         {error && (
-          <p className="mb-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+          <p className="mb-4 border-l-2 border-red-400 bg-red-50/70 px-4 py-2.5 text-sm text-red-800">
             {error}
           </p>
         )}
 
         {loading ? (
-          <p className="text-sm text-slate-400">Loading…</p>
+          <p className="font-mono text-sm text-ink-faint">Reading the shelf…</p>
         ) : documents.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-slate-300 bg-white px-6 py-10 text-center text-sm text-slate-400">
-            No documents yet. Upload your first PDF above.
+          <div className="border border-dashed border-rule bg-surface/60 px-6 py-12 text-center">
+            <p className="font-display text-lg italic text-ink-soft">The shelf is empty.</p>
+            <p className="mt-1 text-sm text-ink-faint">
+              Your first upload will be catalogued here.
+            </p>
           </div>
         ) : (
-          <ul className="space-y-2">
-            {documents.map((doc) => {
+          <ul className="divide-y divide-rule border-y border-rule">
+            {documents.map((doc, i) => {
               const ready = doc.processing_status === 'completed';
               return (
                 <li
                   key={doc.id}
-                  className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3"
+                  className="group flex items-center gap-4 py-4 transition-colors hover:bg-surface/70"
                 >
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="truncate font-medium text-slate-800">{doc.file_name}</span>
+                  <span className="w-8 shrink-0 text-center font-mono text-xs text-ink-faint">
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                      <span className="truncate font-display text-lg leading-snug text-ink">
+                        {doc.file_name}
+                      </span>
                       <StatusBadge status={doc.processing_status} />
                     </div>
-                    <div className="mt-0.5 text-xs text-slate-400">
+                    <div className="mt-1 font-mono text-xs text-ink-faint">
                       {formatBytes(doc.file_size)}
-                      {doc.page_count ? ` · ${doc.page_count} pages` : ''}
+                      {doc.page_count ? ` · ${doc.page_count} pp` : ''}
                       {doc.processing_status === 'failed' && doc.error_message
                         ? ` · ${doc.error_message}`
                         : ''}
@@ -120,19 +151,20 @@ export default function HomePage() {
                     {ready ? (
                       <Link
                         href={`/documents/${doc.id}`}
-                        className="rounded-lg bg-brand-500 px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-600"
+                        className="rounded-sm bg-prussian-500 px-3.5 py-1.5 text-sm font-medium text-paper transition hover:bg-prussian-600"
                       >
                         Open
                       </Link>
                     ) : (
-                      <span className="rounded-lg bg-slate-100 px-3 py-1.5 text-sm text-slate-400">
+                      <span className="rounded-sm border border-rule px-3.5 py-1.5 text-sm text-ink-faint">
                         Open
                       </span>
                     )}
                     <button
                       onClick={() => handleDelete(doc.id)}
                       disabled={deletingId === doc.id}
-                      className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-50 disabled:opacity-50"
+                      className="rounded-sm px-2.5 py-1.5 text-sm text-ink-faint transition hover:text-red-700 disabled:opacity-50"
+                      aria-label={`Delete ${doc.file_name}`}
                     >
                       {deletingId === doc.id ? '…' : 'Delete'}
                     </button>

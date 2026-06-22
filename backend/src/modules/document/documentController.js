@@ -26,7 +26,7 @@ async function upload(req, res) {
   const ext = '.pdf';
   const storagePath = path.join(config.storageDir, `${id}${ext}`);
   fs.mkdirSync(config.storageDir, { recursive: true });
-  fs.renameSync(req.file.path, storagePath);
+  moveFile(req.file.path, storagePath);
 
   const doc = documents.insert({
     id,
@@ -65,6 +65,21 @@ async function remove(req, res) {
   documents.delete(doc.id); // cascades chunks + chat_messages
 
   res.json({ deleted: true, id: doc.id });
+}
+
+/**
+ * Move a file into permanent storage. Uses rename (fast, atomic) when source and
+ * destination are on the same volume; falls back to copy+unlink when they are not
+ * (e.g. OS temp dir on C: and storage on D: -> rename throws EXDEV on Windows).
+ */
+function moveFile(src, dest) {
+  try {
+    fs.renameSync(src, dest);
+  } catch (err) {
+    if (err.code !== 'EXDEV') throw err;
+    fs.copyFileSync(src, dest);
+    safeUnlink(src);
+  }
 }
 
 function safeUnlink(p) {

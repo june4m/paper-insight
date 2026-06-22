@@ -54,7 +54,7 @@ export default function ChatBox({ documentId }) {
       setError(e.message);
       setMessages((m) => [
         ...m,
-        { role: 'assistant', content: `⚠️ ${e.message}`, sources: [], isError: true },
+        { role: 'assistant', content: e.message, sources: [], isError: true },
       ]);
     } finally {
       setSending(false);
@@ -62,47 +62,71 @@ export default function ChatBox({ documentId }) {
   }
 
   return (
-    <div className="flex h-[32rem] flex-col rounded-xl border border-slate-200 bg-white">
-      <div ref={scrollRef} className="flex-1 space-y-4 overflow-y-auto p-4">
+    <div className="flex h-[34rem] flex-col overflow-hidden rounded-sm border border-rule bg-surface shadow-card">
+      <div
+        ref={scrollRef}
+        className="scroll-quiet flex-1 space-y-7 overflow-y-auto px-5 py-6"
+      >
         {messages.length === 0 && !sending && (
-          <div className="flex h-full items-center justify-center text-center text-sm text-slate-400">
-            Ask anything about this document. Answers are grounded in its content with citations.
+          <div className="flex h-full flex-col items-center justify-center px-6 text-center">
+            <p className="font-display text-lg italic text-ink-soft">
+              Begin the conversation.
+            </p>
+            <p className="mt-1 max-w-sm text-sm text-ink-faint">
+              Ask anything about this document. Each answer is drawn from its text and
+              footnoted to the page.
+            </p>
           </div>
         )}
 
-        {messages.map((m, i) => (
-          <div key={i} className={m.role === 'user' ? 'flex justify-end' : 'flex justify-start'}>
-            <div className={m.role === 'user' ? 'max-w-[80%]' : 'max-w-[90%] w-full'}>
-              <div
-                className={`rounded-2xl px-4 py-2 text-sm ${
-                  m.role === 'user'
-                    ? 'bg-brand-500 text-white'
-                    : m.isError
-                      ? 'bg-red-50 text-red-700 border border-red-200'
-                      : 'bg-slate-100 text-slate-800'
-                }`}
-              >
+        {messages.map((m, i) =>
+          m.role === 'user' ? (
+            <div key={i} className="flex justify-end">
+              <div className="max-w-[82%] rounded-sm rounded-tr-none bg-prussian-500 px-4 py-2.5 text-[0.95rem] leading-relaxed text-paper shadow-sm">
                 <p className="whitespace-pre-wrap">{m.content}</p>
               </div>
-              {m.role === 'assistant' && m.sources?.length > 0 && (
-                <div className="mt-2 space-y-1.5">
-                  <p className="text-xs font-medium text-slate-400">Sources</p>
-                  {m.sources.map((s, idx) => (
-                    <SourceChunk key={s.chunk_id || idx} source={s} index={idx} />
-                  ))}
-                </div>
-              )}
             </div>
-          </div>
-        ))}
+          ) : (
+            <div key={i} className="animate-ink-in">
+              <p className="eyebrow mb-2">{m.isError ? 'Could not answer' : 'Answer'}</p>
+              <div
+                className={`border-l-2 pl-4 ${
+                  m.isError ? 'border-red-400' : 'border-prussian-200'
+                }`}
+              >
+                <p
+                  className={`whitespace-pre-wrap font-display text-[1.02rem] leading-relaxed ${
+                    m.isError ? 'text-red-800' : 'text-ink'
+                  }`}
+                >
+                  {m.content}
+                </p>
+
+                {m.sources?.length > 0 && (
+                  <div className="mt-4">
+                    <p className="eyebrow mb-2">
+                      Footnotes · {m.sources.length}
+                    </p>
+                    <div className="space-y-2">
+                      {m.sources.map((s, idx) => (
+                        <SourceChunk key={s.chunk_id || idx} source={s} index={idx} />
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )
+        )}
 
         {sending && (
-          <div className="flex justify-start">
-            <div className="rounded-2xl bg-slate-100 px-4 py-2 text-sm text-slate-500">
-              <span className="inline-flex gap-1">
-                <span className="h-2 w-2 animate-bounce rounded-full bg-slate-400 [animation-delay:-0.3s]" />
-                <span className="h-2 w-2 animate-bounce rounded-full bg-slate-400 [animation-delay:-0.15s]" />
-                <span className="h-2 w-2 animate-bounce rounded-full bg-slate-400" />
+          <div className="animate-ink-in">
+            <p className="eyebrow mb-2">Reading the passages…</p>
+            <div className="border-l-2 border-prussian-200 pl-4">
+              <span className="inline-flex gap-1.5">
+                <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-prussian-400 [animation-delay:-0.3s]" />
+                <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-prussian-400 [animation-delay:-0.15s]" />
+                <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-prussian-400" />
               </span>
             </div>
           </div>
@@ -110,22 +134,24 @@ export default function ChatBox({ documentId }) {
       </div>
 
       {error && (
-        <p className="border-t border-red-100 bg-red-50 px-4 py-2 text-xs text-red-600">{error}</p>
+        <p className="border-t border-red-200 bg-red-50/70 px-5 py-2 text-xs text-red-700">
+          {error}
+        </p>
       )}
 
-      <form onSubmit={send} className="flex items-center gap-2 border-t border-slate-200 p-3">
+      <form onSubmit={send} className="flex items-center gap-2 border-t border-rule bg-paper/60 p-3">
         <input
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
-          placeholder="Ask a question…"
-          className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-brand-500"
+          placeholder="Ask this document a question…"
+          className="flex-1 rounded-sm border border-rule bg-surface px-3.5 py-2.5 text-sm text-ink outline-none transition placeholder:text-ink-faint focus:border-prussian-500"
         />
         <button
           type="submit"
           disabled={sending || !question.trim()}
-          className="rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600 disabled:opacity-50"
+          className="rounded-sm bg-prussian-500 px-4 py-2.5 text-sm font-medium text-paper transition hover:bg-prussian-600 disabled:opacity-40"
         >
-          Send
+          Ask
         </button>
       </form>
     </div>

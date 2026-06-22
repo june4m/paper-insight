@@ -2,30 +2,42 @@
 
 import { useState } from 'react';
 
-/** Renders one source citation (FR-07 / WBS 3.4.4). */
+/** Renders one source citation as a footnote / index card (FR-07 / WBS 3.4.4). */
 export default function SourceChunk({ source, index }) {
   const [open, setOpen] = useState(false);
-  const preview =
-    source.content.length > 160 && !open ? `${source.content.slice(0, 160)}…` : source.content;
+  const long = source.content.length > 160;
+  const preview = long && !open ? `${source.content.slice(0, 160)}…` : source.content;
 
   return (
-    <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs">
-      <div className="mb-1 flex items-center gap-2 font-medium text-slate-500">
-        <span className="rounded bg-brand-100 px-1.5 py-0.5 text-brand-700">#{index + 1}</span>
-        <span className="truncate">{source.document_name}</span>
-        {source.page_number != null && (
-          <span className="text-slate-400">· page {source.page_number}</span>
+    <div className="group relative flex gap-3 border-l-2 border-highlight bg-surface/80 py-2 pl-3 pr-3">
+      {/* Footnote marker — the number you'd see in superscript, given room to breathe. */}
+      <span className="mt-0.5 font-mono text-xs font-semibold text-prussian-500">
+        {index + 1}
+      </span>
+
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-2 font-mono text-[0.68rem] uppercase tracking-wide text-ink-faint">
+          <span className="truncate text-ink-soft">{source.document_name}</span>
+          {source.page_number != null && (
+            <span className="shrink-0 rounded-sm bg-prussian-50 px-1.5 py-px text-prussian-600">
+              p. {source.page_number}
+            </span>
+          )}
+        </div>
+
+        <p className="mt-1 whitespace-pre-wrap font-display text-[0.92rem] leading-relaxed text-ink-soft">
+          {preview}
+        </p>
+
+        {long && (
+          <button
+            onClick={() => setOpen((o) => !o)}
+            className="mt-1 font-mono text-[0.68rem] uppercase tracking-wide text-prussian-500 transition hover:text-prussian-700"
+          >
+            {open ? 'Less' : 'Read passage'}
+          </button>
         )}
       </div>
-      <p className="whitespace-pre-wrap text-slate-600">{preview}</p>
-      {source.content.length > 160 && (
-        <button
-          onClick={() => setOpen((o) => !o)}
-          className="mt-1 text-brand-600 hover:text-brand-700"
-        >
-          {open ? 'Show less' : 'Show more'}
-        </button>
-      )}
     </div>
   );
 }

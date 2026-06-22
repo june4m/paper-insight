@@ -6,6 +6,67 @@
   color-scheme: light;
 }
 
-body {
-  @apply bg-slate-50 text-slate-800 antialiased;
+@layer base {
+  body {
+    @apply bg-paper text-ink antialiased;
+    font-feature-settings: 'liga' 1, 'calt' 1;
+  }
+
+  /* Newsreader looks best for reading with optical sizing on. */
+  .font-display {
+    font-optical-sizing: auto;
+  }
+
+  ::selection {
+    background-color: #f2d86b;
+    color: #1b1d2a;
+  }
+
+  :focus-visible {
+    outline: 2px solid #1f4e7a;
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  /* Eyebrow / label — the mono "archival" voice used across the app. */
+  .eyebrow {
+    @apply font-mono text-[0.7rem] uppercase tracking-[0.18em] text-ink-faint;
+  }
+
+  /* A passage marked the way a reader highlights a line: a soft wash that
+     sits behind the text baseline rather than boxing it in. */
+  .marker-underline {
+    background-image: linear-gradient(transparent 62%, rgba(242, 216, 107, 0.55) 0);
+  }
+
+  /* Hairline divider with a tick, echoing a ruled page margin. */
+  .rule-tick {
+    @apply border-rule;
+  }
+}
+
+/* Thin, paper-toned scrollbar so dense source lists don't feel like an app chrome. */
+.scroll-quiet::-webkit-scrollbar {
+  width: 10px;
+}
+.scroll-quiet::-webkit-scrollbar-thumb {
+  background-color: rgba(27, 29, 42, 0.16);
+  border: 3px solid transparent;
+  background-clip: content-box;
+  border-radius: 999px;
+}
+.scroll-quiet::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }
